@@ -21,8 +21,8 @@ class Yomu
   #   text = Yomu.read :text, data
   #   metadata = Yomu.read :metadata, data
 
-  def self.read(type, data)
-    result = @@server_pid ? self._server_read(type, data) : self._client_read(type, data)
+  def self.read(type, data, command_line_args = '')
+    result = @@server_pid ? self._server_read(type, data) : self._client_read(type, data, command_line_args)
 
     case type
     when :text
@@ -36,7 +36,7 @@ class Yomu
     end
   end
 
-  def self._client_read(type, data)
+  def self._client_read(type, data, command_line_args = '')
     switch = case type
     when :text
       '-t'
@@ -48,7 +48,7 @@ class Yomu
       '-m -j'
     end
 
-    IO.popen "#{java} -Djava.awt.headless=true -jar #{Yomu::JARPATH} #{switch}", 'r+' do |io|
+    IO.popen "#{java} -Djava.awt.headless=true -jar #{Yomu::JARPATH} #{switch} #{command_line_args}", 'r+' do |io|
       io.write data
       io.close_write
       io.read
@@ -113,10 +113,10 @@ class Yomu
   #   yomu = Yomu.new 'sample.pages'
   #   yomu.text
 
-  def text
+  def text(command_line_args = '')
     return @text if defined? @text
 
-    @text = Yomu.read :text, data
+    @text = Yomu.read :text, data, command_line_args
   end
 
   # Returns the text content of the Yomu document in HTML.
